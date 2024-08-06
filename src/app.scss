@@ -13,8 +13,6 @@
 }
 .cardViewer {
   display: grid;
-  //   grid-template-columns: 483px;
-  //   grid-template-rows: 245px;
   gap: 2rem;
   &__background {
     position: absolute;
@@ -77,15 +75,25 @@
   }
 }
 .cardFormContainer {
-  padding: 6rem;
+  padding: 18rem 8rem 8rem 8rem;
 }
 .cardForm {
   display: grid;
   grid-template-columns: 1fr;
+  &__cardCvc {
+    border: 1px solid black;
+  }
+  & label {
+    font-weight: $Fw-bold;
+    margin-bottom: 0.4rem;
+    margin-top: 2rem;
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
   & input {
     border: 1px solid $Neutral-Light-Grayish-Violet;
     border-radius: 8px;
-    margin-bottom: 2rem;
+    padding: 0.75rem;
 
     &::-webkit-outer-spin-button,
     &::-webkit-inner-spin-button {
@@ -95,7 +103,86 @@
       border: 1px solid $Primary-Gra;
     }
   }
+  &__errors {
+    color: $Primary-Red;
+    font-size: 0.75rem;
+    font-weight: $Fw-bold;
+  }
+  &__groupNumbers {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    column-gap: 1rem;
+    grid-template-areas:
+      'dateLab dateLab cvcLab  .'
+      'dateYY  dateMM   cvc   cvc';
+  }
+  &__expDateLab {
+    grid-area: dateLab;
+  }
+  &__cardDateYY {
+    grid-area: dateYY;
+    max-width: 95px;
+  }
+  &__cardDateMM {
+    grid-area: dateMM;
+    max-width: 95px;
+  }
+  &__cardCvc {
+    margin-left: 0.5rem;
+    grid-area: cvc;
+  }
+  &__cardCvcLab {
+    margin-left: 0.5rem;
+    grid-area: cvcLab;
+  }
+  &__button {
+    height: 53px;
+    background-color: $Neutral-Very-Dark-Violet;
+    border: none;
+    border-radius: 8px;
+    color: $Neutral-White;
+    font-weight: $Fw-medium;
+    cursor: pointer;
+    margin-top: 2rem;
+  }
 }
-.formFlex {
-  display: flex;
+@media (max-width: 650px) {
+  .CardDetailsFillUp {
+    grid-template-columns: 1fr;
+  }
+  .cardViewer {
+    &__cardFront {
+      height: 157px;
+      width: 286px;
+      margin-top: 7.875rem;
+      margin-left: 1rem;
+      z-index: 1;
+      &-logo {
+        width: 52px;
+        height: 31px;
+        margin: 1rem;
+      }
+      &-number {
+        font-size: 18px;
+        margin-left: 20px;
+        margin-top: 2rem;
+        margin-bottom: 1rem;
+        letter-spacing: 2px;
+      }
+      &-name {
+        font-size: 0.625rem;
+        font-weight: $Fw-bold;
+      }
+    }
+    &__cardBack {
+      height: 157px;
+      width: 286px;
+      margin-left: 4.5625em;
+      margin-top: -18rem;
+      z-index: -1;
+    }
+  }
+  .cardFormContainer {
+    padding: 1.5rem;
+  }
 }
