@@ -8,12 +8,12 @@ import backDesktop from './assets/images/bg-main-desktop.png';
 import backMobile from './assets/images/bg-main-mobile.png';
 import cardLogo from './assets/images/card-logo.svg';
 import { useForm } from 'react-hook-form';
-import { useState } from 'react';
+import { useState, ChangeEvent } from 'react';
 import { DevTool } from '@hookform/devtools';
 
 type FormValues = {
   cardName: string;
-  cardNumber: number;
+  cardNumber: string;
   cardDateMM: number;
   cardDateYY: number;
   cardCvc: number;
@@ -21,8 +21,26 @@ type FormValues = {
 
 function App() {
   const form = useForm<FormValues>();
-  const { register, control, handleSubmit, formState, getValues } = form;
+  const { register, control, handleSubmit, formState, setValue, trigger } =
+    form;
   const { errors } = formState;
+  const [cardNumber, setCardNumber] = useState<string>('');
+
+  const formatCardNumber = (value: string): string => {
+    const spacedNumber = value.replace(/(.{4})/g, '$1 ').trim();
+    return spacedNumber;
+  };
+  const handleCardNumberSpacing = (event: ChangeEvent<HTMLInputElement>) => {
+    const rawValue = event.target.value.replace(/\s+/g, ''); // Remove spaces for formatting
+    if (rawValue.length > 16) {
+      trigger('cardNumber'); // Trigger validation to show error
+      return; // Block additional input
+    }
+    const formattedValue = formatCardNumber(rawValue);
+    setCardNumber(formattedValue); // Update local state with formatted value
+    setValue('cardNumber', rawValue); // Update react-hook-form value with raw value
+  };
+
   const onSubmit = () => {
     console.log('form submitted');
   };
@@ -77,12 +95,21 @@ function App() {
             <p className="cardForm__errors">{errors.cardName?.message}</p>
             <label htmlFor="cardNumber">CARD NUMBER</label>
             <input
-              type="number"
+              type="text"
               id="cardNumber"
               className="cardForm__cardNumber"
               placeholder="e.g. 1234 5678 9123 0000"
-              {...register('cardNumber')}
+              value={cardNumber}
+              {...register('cardNumber', {
+                required: 'Card number is required',
+                onChange: handleCardNumberSpacing,
+                maxLength: {
+                  value: 19,
+                  message: 'Card number cannot exeed 16 digits',
+                },
+              })}
             />
+            <p className="cardForm__errors">{errors.cardNumber?.message}</p>
             <div className="cardForm__groupNumbers">
               <label htmlFor="expDate" className="cardForm__expDateLab">
                 EXP. DATE (MM/YY)
@@ -92,8 +119,12 @@ function App() {
                 id="expDate"
                 className="cardForm__cardDateMM"
                 placeholder="MM"
-                {...register('cardDateMM')}
+                {...register('cardDateMM', {
+                  required: "Can't be blank",
+                })}
               />
+              <p className="cardForm__errors">{errors.cardDateMM?.message}</p>
+
               <input
                 type="number"
                 id="expDateYY"
