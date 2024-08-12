@@ -114,7 +114,27 @@
     column-gap: 1rem;
     grid-template-areas:
       'dateLab dateLab cvcLab  .'
-      'dateYY  dateMM   cvc   cvc';
+      'dateMM  dateYY   cvc   cvc'
+      'errorYY errorMM errorCvc .';
+
+    &-errorMM,
+    &-errorYY,
+    &-errorCvc {
+      color: $Primary-Red;
+      font-size: 0.75rem;
+      font-weight: $Fw-bold;
+    }
+    &-errorMM {
+      grid-area: errorMM;
+    }
+    &-errorYY {
+      grid-area: errorYY;
+    }
+    &-errorCvc {
+      grid-area: errorCvc;
+      grid-column: span 2;
+      margin-left: 0.5rem;
+    }
   }
   &__expDateLab {
     grid-area: dateLab;

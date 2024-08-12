@@ -95,7 +95,7 @@ function App() {
             <p className="cardForm__errors">{errors.cardName?.message}</p>
             <label htmlFor="cardNumber">CARD NUMBER</label>
             <input
-              type="text"
+              type="tel"
               id="cardNumber"
               className="cardForm__cardNumber"
               placeholder="e.g. 1234 5678 9123 0000"
@@ -105,8 +105,10 @@ function App() {
                 onChange: handleCardNumberSpacing,
                 maxLength: {
                   value: 19,
-                  message: 'Card number cannot exeed 16 digits',
+                  message: 'Card number cannot exceed 16 digits',
                 },
+                validate: (value) =>
+                  /^\d*$/.test(value) || 'Wrong format, numbers only',
               })}
             />
             <p className="cardForm__errors">{errors.cardNumber?.message}</p>
@@ -115,7 +117,7 @@ function App() {
                 EXP. DATE (MM/YY)
               </label>
               <input
-                type="number"
+                type="text"
                 id="expDate"
                 className="cardForm__cardDateMM"
                 placeholder="MM"
@@ -123,15 +125,19 @@ function App() {
                   required: "Can't be blank",
                 })}
               />
-              <p className="cardForm__errors">{errors.cardDateMM?.message}</p>
 
               <input
                 type="number"
                 id="expDateYY"
                 className="cardForm__cardDateYY"
                 placeholder="YY"
-                {...register('cardDateYY')}
+                {...register('cardDateYY', {
+                  required: "Can't be blank",
+                })}
               />
+              <p className="cardForm__groupNumbers-errorYY">
+                {errors.cardDateYY?.message}
+              </p>
               <label htmlFor="cvc" className="cardForm__cardCvcLab">
                 CVC
               </label>
@@ -140,8 +146,13 @@ function App() {
                 id="cvc"
                 className="cardForm__cardCvc"
                 placeholder="e.g. 123"
-                {...register('cardCvc')}
+                {...register('cardCvc', {
+                  required: "Can't be blank",
+                })}
               />
+              <p className="cardForm__groupNumbers-errorCvc">
+                {errors.cardCvc?.message}
+              </p>
             </div>
             <button className="cardForm__button">Confirm</button>
           </form>
