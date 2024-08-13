@@ -8,39 +8,64 @@ import backDesktop from './assets/images/bg-main-desktop.png';
 import backMobile from './assets/images/bg-main-mobile.png';
 import cardLogo from './assets/images/card-logo.svg';
 import { useForm } from 'react-hook-form';
-import { useState, ChangeEvent } from 'react';
+import { useState, ChangeEvent, useRef } from 'react';
 import { DevTool } from '@hookform/devtools';
 
 type FormValues = {
   cardName: string;
   cardNumber: string;
-  cardDateMM: number;
-  cardDateYY: number;
-  cardCvc: number;
+  cardDateMM: string;
+  cardDateYY: string;
+  cardCvc: string;
 };
 
 function App() {
   const form = useForm<FormValues>();
-  const { register, control, handleSubmit, formState, setValue, trigger } =
+  const { register, control, handleSubmit, formState, setValue, setFocus } =
     form;
   const { errors } = formState;
   const [cardNumber, setCardNumber] = useState<string>('');
+  const submitButtonRef = useRef<HTMLButtonElement>(null);
 
-  const formatCardNumber = (value: string): string => {
-    const spacedNumber = value.replace(/(.{4})/g, '$1 ').trim();
-    return spacedNumber;
-  };
-  const handleCardNumberSpacing = (event: ChangeEvent<HTMLInputElement>) => {
-    const rawValue = event.target.value.replace(/\s+/g, ''); // Remove spaces for formatting
-    if (rawValue.length > 16) {
-      trigger('cardNumber'); // Trigger validation to show error
-      return; // Block additional input
+  const handleCardNumberFormat = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.replace(/\s+/g, '');
+    if (value.length > 16) {
+      // trigger('cardNumber');
+      setFocus('cardDateMM');
+      return;
     }
-    const formattedValue = formatCardNumber(rawValue);
-    setCardNumber(formattedValue); // Update local state with formatted value
-    setValue('cardNumber', rawValue); // Update react-hook-form value with raw value
+    const formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
+    setCardNumber(formattedValue);
+    setValue('cardNumber', value);
   };
 
+  const handleCardDateMMNumber = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.replace(/\D/g, '');
+    if (value.length >= 2) {
+      setFocus('cardDateYY');
+      setValue('cardDateMM', value.slice(0, 2));
+      return;
+    }
+    setValue('cardDateMM', value);
+  };
+  const handleCardDateYYNumber = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.replace(/\D/g, '');
+    if (value.length >= 4) {
+      setFocus('cardCvc');
+      setValue('cardDateYY', value.slice(0, 4));
+      return;
+    }
+    setValue('cardDateYY', value);
+  };
+  const handleCardCvcNumber = (event: ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value.replace(/\D/g, '');
+    if (value.length >= 3) {
+      setValue('cardCvc', value.slice(0, 3));
+      submitButtonRef.current?.focus();
+      return;
+    }
+    setValue('cardCvc', value);
+  };
   const onSubmit = () => {
     console.log('form submitted');
   };
@@ -100,13 +125,10 @@ function App() {
               className="cardForm__cardNumber"
               placeholder="e.g. 1234 5678 9123 0000"
               value={cardNumber}
+              // Why when this error is triggered then its being triggered woith a proper fill
               {...register('cardNumber', {
                 required: 'Card number is required',
-                onChange: handleCardNumberSpacing,
-                maxLength: {
-                  value: 19,
-                  message: 'Card number cannot exceed 16 digits',
-                },
+                onChange: handleCardNumberFormat,
                 validate: (value) =>
                   /^\d*$/.test(value) || 'Wrong format, numbers only',
               })}
@@ -117,14 +139,18 @@ function App() {
                 EXP. DATE (MM/YY)
               </label>
               <input
-                type="text"
+                type="tel"
                 id="expDate"
                 className="cardForm__cardDateMM"
                 placeholder="MM"
                 {...register('cardDateMM', {
                   required: "Can't be blank",
+                  onChange: handleCardDateMMNumber,
                 })}
               />
+              <p className="cardForm__groupNumbers-errorMM">
+                {errors.cardDateMM?.message}
+              </p>
 
               <input
                 type="number"
@@ -133,6 +159,7 @@ function App() {
                 placeholder="YY"
                 {...register('cardDateYY', {
                   required: "Can't be blank",
+                  onChange: handleCardDateYYNumber,
                 })}
               />
               <p className="cardForm__groupNumbers-errorYY">
@@ -148,13 +175,16 @@ function App() {
                 placeholder="e.g. 123"
                 {...register('cardCvc', {
                   required: "Can't be blank",
+                  onChange: handleCardCvcNumber,
                 })}
               />
               <p className="cardForm__groupNumbers-errorCvc">
                 {errors.cardCvc?.message}
               </p>
             </div>
-            <button className="cardForm__button">Confirm</button>
+            <button className="cardForm__button" ref={submitButtonRef}>
+              Confirm
+            </button>
           </form>
           <DevTool control={control} />
         </div>
