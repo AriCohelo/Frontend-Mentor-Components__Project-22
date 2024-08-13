@@ -8,8 +8,9 @@ import backDesktop from './assets/images/bg-main-desktop.png';
 import backMobile from './assets/images/bg-main-mobile.png';
 import cardLogo from './assets/images/card-logo.svg';
 import { useForm } from 'react-hook-form';
-import { useState, ChangeEvent, useRef } from 'react';
 import { DevTool } from '@hookform/devtools';
+// import changeField from './changeField';
+import { useState, useRef, ChangeEvent } from 'react';
 
 type FormValues = {
   cardName: string;
@@ -24,47 +25,113 @@ function App() {
   const { register, control, handleSubmit, formState, setValue, setFocus } =
     form;
   const { errors } = formState;
+  const [cardName, setCardName] = useState<string>('');
   const [cardNumber, setCardNumber] = useState<string>('');
+  const [cardDateMM, setCardDateMM] = useState<string>('');
+  const [cardDateYY, setCardDateYY] = useState<string>('');
+  const [cardCvc, setCardCvc] = useState<string>('');
+
+  //The commented logic is for handlig the field change without being in an outisde hook
   const submitButtonRef = useRef<HTMLButtonElement>(null);
+  // const { cardNumber, handleFieldChange, submitButtonRef } = changeField({
+  //   setValue,
+  //   setFocus,
+  // });
 
-  const handleCardNumberFormat = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/\s+/g, '');
-    if (value.length > 16) {
-      // trigger('cardNumber');
-      setFocus('cardDateMM');
-      return;
-    }
-    const formattedValue = value.replace(/(.{4})/g, '$1 ').trim();
-    setCardNumber(formattedValue);
-    setValue('cardNumber', value);
-  };
+  const handleFieldChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
 
-  const handleCardDateMMNumber = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/\D/g, '');
-    if (value.length >= 2) {
-      setFocus('cardDateYY');
-      setValue('cardDateMM', value.slice(0, 2));
-      return;
+    switch (name) {
+      case 'cardName': {
+        const cleanValue = value.toUpperCase();
+        setCardName(cleanValue);
+        setValue(name, cleanValue);
+        break;
+      }
+      case 'cardNumber': {
+        const cleanValue = value.replace(/\s+/g, '');
+        if (cleanValue.length > 16) {
+          setFocus('cardDateMM');
+          break;
+        }
+        const formattedValue = cleanValue.replace(/(.{4})/g, '$1 ').trim();
+        setCardNumber(formattedValue);
+        setValue(name, cleanValue);
+        break;
+      }
+
+      case 'cardDateMM': {
+        const cleanValue = value.replace(/\D/g, '');
+        if (cleanValue.length >= 2) {
+          setFocus('cardDateYY');
+          setValue(name, cleanValue.slice(0, 2));
+          setCardDateMM(cleanValue.slice(0, 2));
+
+          break;
+        }
+        setValue(name, cleanValue);
+        break;
+      }
+
+      case 'cardDateYY': {
+        const cleanValue = value.replace(/\D/g, '');
+        if (cleanValue.length >= 2) {
+          setFocus('cardCvc');
+          setValue(name, cleanValue.slice(0, 2));
+          break;
+        }
+        setValue(name, cleanValue);
+        setCardDateYY(cleanValue.slice(0, 2));
+
+        break;
+      }
+
+      case 'cardCvc': {
+        const cleanValue = value.replace(/\D/g, '');
+        if (cleanValue.length >= 3) {
+          setValue(name, cleanValue.slice(0, 3));
+          submitButtonRef.current?.focus();
+          setCardCvc(cleanValue.slice(0, 3));
+          break;
+        }
+        setValue(name, cleanValue);
+        setCardCvc(cleanValue);
+        break;
+      }
+      default:
+        break;
     }
-    setValue('cardDateMM', value);
   };
-  const handleCardDateYYNumber = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/\D/g, '');
-    if (value.length >= 4) {
-      setFocus('cardCvc');
-      setValue('cardDateYY', value.slice(0, 4));
-      return;
+  // const validateExpiryDate = (mm: string, yy: string) => {
+  //   const currentYear = new Date().getFullYear();
+  //   const currentMonth = new Date().getMonth() + 1;
+
+  //   const expYear = parseInt(yy, 10);
+  //   const expMonth = parseInt(mm, 10);
+
+  //   if (expYear > currentYear) return true;
+  //   if (expYear === currentYear && expMonth > currentMonth) return true;
+
+  //   return 'Invalid Date';
+  // };
+  const validateExpiryDate = (mm: string, yy: string) => {
+    const currentYear = new Date().getFullYear();
+    const currentMonth = new Date().getMonth() + 1;
+
+    // Ensure that mm and yy are numeric and have the expected length
+    const expMonth = parseInt(mm, 10);
+    const expYear = parseInt(`20${yy}`, 10); // Convert yy to a 4-digit year
+
+    // Check if the month and year are valid
+    if (isNaN(expMonth) || isNaN(expYear) || expMonth < 1 || expMonth > 12) {
+      return 'Invalid Date';
     }
-    setValue('cardDateYY', value);
-  };
-  const handleCardCvcNumber = (event: ChangeEvent<HTMLInputElement>) => {
-    const value = event.target.value.replace(/\D/g, '');
-    if (value.length >= 3) {
-      setValue('cardCvc', value.slice(0, 3));
-      submitButtonRef.current?.focus();
-      return;
-    }
-    setValue('cardCvc', value);
+
+    // Validate the expiration year and month
+    if (expYear > currentYear) return true;
+    if (expYear === currentYear && expMonth >= currentMonth) return true;
+
+    return 'Invalid Date';
   };
   const onSubmit = () => {
     console.log('form submitted');
@@ -88,9 +155,15 @@ function App() {
               src={cardLogo}
               alt="card-logo"
             />
-            <p className="cardViewer__cardFront-number">0000 0000 0000 0000</p>
-            <p className="cardViewer__cardFront-name">JANE APPLESEED</p>
-            <p className="cardViewer__cardFront-date">00/00</p>
+            <p className="cardViewer__cardFront-number">
+              {cardNumber || '0000 0000 0000 0000'}
+            </p>
+            <p className="cardViewer__cardFront-name">
+              {cardName || 'JANE APPLESEED'}
+            </p>
+            <p className="cardViewer__cardFront-date">
+              {`${cardDateMM}/${cardDateYY}` || '00/00'}
+            </p>
           </div>
           <div className="cardViewer__cardBack">
             <img
@@ -98,7 +171,7 @@ function App() {
               src={cardBack}
               alt="card-back"
             />
-            <p className="cardViewer__cardBack-number">000</p>
+            <p className="cardViewer__cardBack-number">{cardCvc || '000'}</p>
           </div>
         </div>
         <div className="cardFormContainer">
@@ -113,11 +186,14 @@ function App() {
               id="cardName"
               className="cardForm__cardName"
               placeholder="e.g. Jane Appleseed"
+              value={cardName}
               {...register('cardName', {
                 required: 'This Field is required',
+                onChange: handleFieldChange,
               })}
             />
             <p className="cardForm__errors">{errors.cardName?.message}</p>
+
             <label htmlFor="cardNumber">CARD NUMBER</label>
             <input
               type="tel"
@@ -125,15 +201,16 @@ function App() {
               className="cardForm__cardNumber"
               placeholder="e.g. 1234 5678 9123 0000"
               value={cardNumber}
-              // Why when this error is triggered then its being triggered woith a proper fill
               {...register('cardNumber', {
                 required: 'Card number is required',
-                onChange: handleCardNumberFormat,
+                onChange: handleFieldChange,
                 validate: (value) =>
-                  /^\d*$/.test(value) || 'Wrong format, numbers only',
+                  /^\d*$/.test(value.replace(/\s+/g, '')) ||
+                  'Wrong format, numbers only',
               })}
             />
             <p className="cardForm__errors">{errors.cardNumber?.message}</p>
+
             <div className="cardForm__groupNumbers">
               <label htmlFor="expDate" className="cardForm__expDateLab">
                 EXP. DATE (MM/YY)
@@ -145,7 +222,7 @@ function App() {
                 placeholder="MM"
                 {...register('cardDateMM', {
                   required: "Can't be blank",
-                  onChange: handleCardDateMMNumber,
+                  onChange: handleFieldChange,
                 })}
               />
               <p className="cardForm__groupNumbers-errorMM">
@@ -153,29 +230,33 @@ function App() {
               </p>
 
               <input
-                type="number"
+                type="tel"
                 id="expDateYY"
                 className="cardForm__cardDateYY"
                 placeholder="YY"
                 {...register('cardDateYY', {
                   required: "Can't be blank",
-                  onChange: handleCardDateYYNumber,
+                  onChange: handleFieldChange,
+                  validate: (value, context) =>
+                    validateExpiryDate(context.cardDateMM, value),
                 })}
               />
               <p className="cardForm__groupNumbers-errorYY">
                 {errors.cardDateYY?.message}
               </p>
+
               <label htmlFor="cvc" className="cardForm__cardCvcLab">
                 CVC
               </label>
               <input
-                type="number"
+                type="tel"
                 id="cvc"
                 className="cardForm__cardCvc"
                 placeholder="e.g. 123"
+                value={cardCvc}
                 {...register('cardCvc', {
                   required: "Can't be blank",
-                  onChange: handleCardCvcNumber,
+                  onChange: handleFieldChange,
                 })}
               />
               <p className="cardForm__groupNumbers-errorCvc">
