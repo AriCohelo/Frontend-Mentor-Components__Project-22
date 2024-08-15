@@ -24,12 +24,22 @@
     position: relative;
     margin-top: 11.6875rem;
     margin-left: 10.25rem;
+    &-info {
+      padding: 2rem 1.5rem 2rem 2rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      grid-template-areas:
+        'logo   logo   logo   logo '
+        'number number number number '
+        'name   name   name  cardDate';
+    }
     &-img {
       position: absolute;
       z-index: -1;
     }
     &-logo {
-      margin: 2rem;
+      grid-area: logo;
+      margin-bottom: 4rem;
     }
     &-number {
       color: $Neutral-White;
@@ -37,21 +47,25 @@
       font-weight: $Fw-bold;
       font-size: 1.75rem;
       letter-spacing: 0.24rem;
-      margin-left: 2rem;
-      margin-bottom: 2rem;
+      grid-area: number;
     }
     &-name {
       color: $Neutral-White;
       font-family: $Ff-primary;
+      font-weight: $Fw-bold;
       letter-spacing: 0.06rem;
-      display: inline-block;
-      margin-left: 2rem;
+      grid-area: name;
+      margin-top: 1rem;
     }
+
     &-date {
-      display: inline-block;
+      grid-area: cardDate;
       color: $Neutral-White;
       font-family: $Ff-primary;
-      margin-left: 12rem;
+      font-weight: $Fw-bold;
+      margin-top: 1rem;
+      font-size: 0.875rem;
+      justify-self: center;
     }
   }
   &__cardBack {
@@ -100,7 +114,8 @@
       -webkit-appearance: none;
     }
     &:focus {
-      border: 1px solid $Primary-Gra;
+      border: 2px solid hsl(262, 34%, 33%);
+      outline: none;
     }
   }
   &__errors {
@@ -170,6 +185,7 @@
 @media (max-width: 650px) {
   .CardDetailsFillUp {
     grid-template-columns: 1fr;
+    padding: 0;
   }
   .cardViewer {
     &__cardFront {
@@ -178,21 +194,25 @@
       margin-top: 7.875rem;
       margin-left: 1rem;
       z-index: 1;
+      &-info {
+        padding: 1.25rem;
+      }
       &-logo {
         width: 52px;
         height: 31px;
-        margin: 1rem;
+        margin-bottom: 1.5rem;
       }
       &-number {
         font-size: 18px;
-        margin-left: 20px;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
+
         letter-spacing: 2px;
       }
       &-name {
         font-size: 0.625rem;
         font-weight: $Fw-bold;
+      }
+      &-date {
+        font-size: 0.625rem;
       }
     }
     &__cardBack {
@@ -201,9 +221,42 @@
       margin-left: 4.5625em;
       margin-top: -18rem;
       z-index: -1;
+      &-number {
+        top: 70px;
+        right: 30px;
+        font-size: 0.625rem;
+      }
     }
   }
   .cardFormContainer {
     padding: 1.5rem;
+  }
+}
+.thankYou {
+  display: grid;
+  grid-template-columns: 1fr;
+  min-width: 17.4375rem;
+  & p,
+  h1,
+  img {
+    justify-self: center;
+  }
+  & img {
+    margin-bottom: 2rem;
+  }
+  & h1 {
+    margin-bottom: 1.5rem;
+  }
+  & p {
+    margin-bottom: 3rem;
+  }
+  & button {
+    height: 53px;
+    background-color: $Neutral-Very-Dark-Violet;
+    border: none;
+    border-radius: 8px;
+    color: $Neutral-White;
+    font-weight: $Fw-medium;
+    cursor: pointer;
   }
 }

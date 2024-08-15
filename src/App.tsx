@@ -7,6 +7,7 @@ import cardFront from './assets/images/bg-card-front.png';
 import backDesktop from './assets/images/bg-main-desktop.png';
 import backMobile from './assets/images/bg-main-mobile.png';
 import cardLogo from './assets/images/card-logo.svg';
+import iconComplete from './assets/images/icon-complete.svg';
 import { useForm } from 'react-hook-form';
 import { DevTool } from '@hookform/devtools';
 // import changeField from './changeField';
@@ -30,6 +31,7 @@ function App() {
   const [cardDateMM, setCardDateMM] = useState<string>('');
   const [cardDateYY, setCardDateYY] = useState<string>('');
   const [cardCvc, setCardCvc] = useState<string>('');
+  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
   //The commented logic is for handlig the field change without being in an outisde hook
   const submitButtonRef = useRef<HTMLButtonElement>(null);
@@ -75,9 +77,10 @@ function App() {
 
       case 'cardDateYY': {
         const cleanValue = value.replace(/\D/g, '');
-        if (cleanValue.length >= 2) {
-          setFocus('cardCvc');
+        if (cleanValue.length === 2) {
           setValue(name, cleanValue.slice(0, 2));
+          setCardDateYY(cleanValue.slice(0, 2));
+          setFocus('cardCvc');
           break;
         }
         setValue(name, cleanValue);
@@ -102,31 +105,17 @@ function App() {
         break;
     }
   };
-  // const validateExpiryDate = (mm: string, yy: string) => {
-  //   const currentYear = new Date().getFullYear();
-  //   const currentMonth = new Date().getMonth() + 1;
 
-  //   const expYear = parseInt(yy, 10);
-  //   const expMonth = parseInt(mm, 10);
-
-  //   if (expYear > currentYear) return true;
-  //   if (expYear === currentYear && expMonth > currentMonth) return true;
-
-  //   return 'Invalid Date';
-  // };
   const validateExpiryDate = (mm: string, yy: string) => {
     const currentYear = new Date().getFullYear();
     const currentMonth = new Date().getMonth() + 1;
-
     // Ensure that mm and yy are numeric and have the expected length
     const expMonth = parseInt(mm, 10);
     const expYear = parseInt(`20${yy}`, 10); // Convert yy to a 4-digit year
-
     // Check if the month and year are valid
     if (isNaN(expMonth) || isNaN(expYear) || expMonth < 1 || expMonth > 12) {
       return 'Invalid Date';
     }
-
     // Validate the expiration year and month
     if (expYear > currentYear) return true;
     if (expYear === currentYear && expMonth >= currentMonth) return true;
@@ -135,6 +124,7 @@ function App() {
   };
   const onSubmit = () => {
     console.log('form submitted');
+    setIsSubmitted(true);
   };
   return (
     <>
@@ -150,20 +140,22 @@ function App() {
               src={cardFront}
               alt="card-Front"
             />
-            <img
-              className="cardViewer__cardFront-logo"
-              src={cardLogo}
-              alt="card-logo"
-            />
-            <p className="cardViewer__cardFront-number">
-              {cardNumber || '0000 0000 0000 0000'}
-            </p>
-            <p className="cardViewer__cardFront-name">
-              {cardName || 'JANE APPLESEED'}
-            </p>
-            <p className="cardViewer__cardFront-date">
-              {`${cardDateMM}/${cardDateYY}` || '00/00'}
-            </p>
+            <div className="cardViewer__cardFront-info">
+              <img
+                className="cardViewer__cardFront-logo"
+                src={cardLogo}
+                alt="card-logo"
+              />
+              <p className="cardViewer__cardFront-number">
+                {cardNumber || '0000 0000 0000 0000'}
+              </p>
+              <p className="cardViewer__cardFront-name">
+                {cardName || 'JANE APPLESEED'}
+              </p>
+              <p className="cardViewer__cardFront-date">
+                {cardDateMM || '00'}/{cardDateYY || '00'}
+              </p>
+            </div>
           </div>
           <div className="cardViewer__cardBack">
             <img
@@ -175,98 +167,108 @@ function App() {
           </div>
         </div>
         <div className="cardFormContainer">
-          <form
-            className="cardForm"
-            noValidate
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            <label htmlFor="cardName">CARDHOLDER NAME</label>
-            <input
-              type="text"
-              id="cardName"
-              className="cardForm__cardName"
-              placeholder="e.g. Jane Appleseed"
-              value={cardName}
-              {...register('cardName', {
-                required: 'This Field is required',
-                onChange: handleFieldChange,
-              })}
-            />
-            <p className="cardForm__errors">{errors.cardName?.message}</p>
-
-            <label htmlFor="cardNumber">CARD NUMBER</label>
-            <input
-              type="tel"
-              id="cardNumber"
-              className="cardForm__cardNumber"
-              placeholder="e.g. 1234 5678 9123 0000"
-              value={cardNumber}
-              {...register('cardNumber', {
-                required: 'Card number is required',
-                onChange: handleFieldChange,
-                validate: (value) =>
-                  /^\d*$/.test(value.replace(/\s+/g, '')) ||
-                  'Wrong format, numbers only',
-              })}
-            />
-            <p className="cardForm__errors">{errors.cardNumber?.message}</p>
-
-            <div className="cardForm__groupNumbers">
-              <label htmlFor="expDate" className="cardForm__expDateLab">
-                EXP. DATE (MM/YY)
-              </label>
-              <input
-                type="tel"
-                id="expDate"
-                className="cardForm__cardDateMM"
-                placeholder="MM"
-                {...register('cardDateMM', {
-                  required: "Can't be blank",
-                  onChange: handleFieldChange,
-                })}
-              />
-              <p className="cardForm__groupNumbers-errorMM">
-                {errors.cardDateMM?.message}
-              </p>
-
-              <input
-                type="tel"
-                id="expDateYY"
-                className="cardForm__cardDateYY"
-                placeholder="YY"
-                {...register('cardDateYY', {
-                  required: "Can't be blank",
-                  onChange: handleFieldChange,
-                  validate: (value, context) =>
-                    validateExpiryDate(context.cardDateMM, value),
-                })}
-              />
-              <p className="cardForm__groupNumbers-errorYY">
-                {errors.cardDateYY?.message}
-              </p>
-
-              <label htmlFor="cvc" className="cardForm__cardCvcLab">
-                CVC
-              </label>
-              <input
-                type="tel"
-                id="cvc"
-                className="cardForm__cardCvc"
-                placeholder="e.g. 123"
-                value={cardCvc}
-                {...register('cardCvc', {
-                  required: "Can't be blank",
-                  onChange: handleFieldChange,
-                })}
-              />
-              <p className="cardForm__groupNumbers-errorCvc">
-                {errors.cardCvc?.message}
-              </p>
+          {isSubmitted ? (
+            <div className="thankYou">
+              <img src={iconComplete} alt="iconComplete" />
+              <h1>THANK YOU!</h1>
+              <p>We've added your card details</p>
+              <button onClick={() => window.location.reload()}>Continue</button>
             </div>
-            <button className="cardForm__button" ref={submitButtonRef}>
-              Confirm
-            </button>
-          </form>
+          ) : (
+            <form
+              className="cardForm"
+              noValidate
+              onSubmit={handleSubmit(onSubmit)}
+            >
+              <label htmlFor="cardName">CARDHOLDER NAME</label>
+              <input
+                type="text"
+                id="cardName"
+                className="cardForm__cardName"
+                placeholder="e.g. Jane Appleseed"
+                value={cardName}
+                {...register('cardName', {
+                  required: 'This Field is required',
+                  onChange: handleFieldChange,
+                })}
+              />
+              <p className="cardForm__errors">{errors.cardName?.message}</p>
+
+              <label htmlFor="cardNumber">CARD NUMBER</label>
+              <input
+                type="tel"
+                id="cardNumber"
+                className="cardForm__cardNumber"
+                placeholder="e.g. 1234 5678 9123 0000"
+                value={cardNumber}
+                {...register('cardNumber', {
+                  required: 'Card number is required',
+                  onChange: handleFieldChange,
+                  validate: (value) =>
+                    /^\d*$/.test(value.replace(/\s+/g, '')) ||
+                    'Wrong format, numbers only',
+                })}
+              />
+              <p className="cardForm__errors">{errors.cardNumber?.message}</p>
+
+              <div className="cardForm__groupNumbers">
+                <label htmlFor="expDate" className="cardForm__expDateLab">
+                  EXP. DATE (MM/YY)
+                </label>
+                <input
+                  type="tel"
+                  id="expDate"
+                  className="cardForm__cardDateMM"
+                  placeholder="MM"
+                  {...register('cardDateMM', {
+                    required: "Can't be blank",
+                    onChange: handleFieldChange,
+                  })}
+                />
+                <p className="cardForm__groupNumbers-errorMM">
+                  {errors.cardDateMM?.message}
+                </p>
+
+                <input
+                  type="tel"
+                  id="expDateYY"
+                  className="cardForm__cardDateYY"
+                  placeholder="YY"
+                  value={cardDateYY}
+                  {...register('cardDateYY', {
+                    required: "Can't be blank",
+                    onChange: handleFieldChange,
+                    validate: (value, context) =>
+                      validateExpiryDate(context.cardDateMM, value),
+                  })}
+                />
+                <p className="cardForm__groupNumbers-errorYY">
+                  {errors.cardDateYY?.message}
+                </p>
+
+                <label htmlFor="cvc" className="cardForm__cardCvcLab">
+                  CVC
+                </label>
+                <input
+                  type="tel"
+                  id="cvc"
+                  className="cardForm__cardCvc"
+                  placeholder="e.g. 123"
+                  value={cardCvc}
+                  {...register('cardCvc', {
+                    required: "Can't be blank",
+                    onChange: handleFieldChange,
+                  })}
+                />
+                <p className="cardForm__groupNumbers-errorCvc">
+                  {errors.cardCvc?.message}
+                </p>
+              </div>
+              <button className="cardForm__button" ref={submitButtonRef}>
+                Confirm
+              </button>
+            </form>
+          )}
           <DevTool control={control} />
         </div>
       </div>
