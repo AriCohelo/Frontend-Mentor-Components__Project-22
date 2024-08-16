@@ -33,7 +33,7 @@ function App() {
   const [cardCvc, setCardCvc] = useState<string>('');
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
 
-  //The commented logic is for handlig the field change without being in an outisde hook
+  //The commented logic is part of what I need to use the changeFiled as a Hook
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   // const { cardNumber, handleFieldChange, submitButtonRef } = changeField({
   //   setValue,
