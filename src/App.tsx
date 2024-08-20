@@ -51,7 +51,8 @@ function App() {
         break;
       }
       case 'cardNumber': {
-        const cleanValue = value.replace(/\s+/g, '');
+        const cleanValue = value.replace(/\D/g, '');
+
         if (cleanValue.length > 16) {
           setFocus('cardDateMM');
           break;
